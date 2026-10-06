@@ -28,7 +28,7 @@ Run inside a graphical session, or set the variables explicitly:
 XDG_CURRENT_DESKTOP=GNOME XDG_SESSION_TYPE=wayland WAYLAND_DISPLAY=wayland-0 cargo run --example 01_appearance
 ```
 
-### Everything is `Unsupported` under SSH
+### Everything is `NotSupported` under SSH
 
 No session bus means no portal, no DE IPC and no notifications. Wake locks and wallpaper cannot work either. This is degradation working as designed, not a bug.
 
@@ -54,7 +54,7 @@ The SDK resolves in this order: an explicit `library_path` → the `UDA_LIBRARY`
 
 ### `Feature not supported: Neither feh nor nitrogen`
 
-**Symptom**: `UdaError::Unsupported` whose message lists every CLI tool name.
+**Symptom**: `UdaError::NotSupported` whose message lists every CLI tool name.
 
 **Cause**: Tier 1 (the portal) and Tier 2 (GNOME/KDE/Hyprland/Sway IPC) are unavailable, and the Tier 3 `PATH` probe found none of the tools either.
 

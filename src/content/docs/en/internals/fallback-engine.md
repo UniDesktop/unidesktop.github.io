@@ -9,10 +9,10 @@ description: How each of the four tiers probes, decides, and what it returns whe
 Tier 1  XDG Desktop Portal
 Tier 2  Native DE D-Bus / IPC
 Tier 3  CLI tools (probe PATH)
-Tier 4  UdaError::Unsupported (typed error)
+Tier 4  UdaError::NotSupported (typed error)
 ```
 
-When all three service tiers fail there is **no panic** and no bare `io::Error` — the caller receives a `UdaError::Unsupported` carrying a diagnosis. This is the mechanical form of AGENTS.md Principle 1: never assume a capability, always degrade.
+When all three service tiers fail there is **no panic** and no bare `io::Error` — the caller receives a `UdaError::NotSupported` carrying a diagnosis. This is the mechanical form of AGENTS.md Principle 1: never assume a capability, always degrade.
 
 ## Tier 1 — XDG Desktop Portal
 
@@ -55,7 +55,7 @@ Every portal call runs inside a timeout, because the portal may present a consen
 
 ## Tier 4 — typed error
 
-The final tier is not a workaround, it is a **contract**: `UdaError::Unsupported("...")` with a message naming the tier chain that was tried. A host can render it verbatim, or match on the type to hide the feature entirely.
+The final tier is not a workaround, it is a **contract**: `UdaError::NotSupported("...")` with a message naming the tier chain that was tried. A host can render it verbatim, or match on the type to hide the feature entirely.
 
 ## What the caller sees
 
@@ -65,8 +65,8 @@ The tiers are internal. A host observes only:
 |---|---|
 | `Ok(...)` | some tier answered |
 | `SupportLevel::Full` | Tier 1 or 2 answered, with no known limitation |
-| `SupportLevel::Restricted(reason)` | only a later, weaker tier answered |
-| `UdaError::Unsupported` | all four tiers are exhausted |
+| `SupportLevel::Partial(reason)` | available, but in a degraded form, with the reason attached |
+| `UdaError::NotSupported` | all four tiers are exhausted |
 
 ## See also
 

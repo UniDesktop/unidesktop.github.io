@@ -32,7 +32,7 @@ description: 功能 × 桌面环境的完整支持情况，以及每一格所用
 
 | 条目 | 回退行为 | 上报结果 |
 |------|----------|----------|
-| Hyprland / Sway / X11 上的主题检测 | 无系统级配色方案；若某个 GTK 应用写入过值则读取 GSettings | 读取返回 `Theme::Unknown` |
+| Hyprland / Sway / X11 上的主题检测 | 无系统级配色方案；若某个 GTK 应用写入过值则读取 GSettings | 全部探测均无结果时返回 `Theme::Unknown` |
 | 平铺 WM / X11 上的通知 | `org.freedesktop.Notifications` 可用，但动作按钮与图片取决于所装守护进程 | 守护进程过旧时按钮不渲染 |
 | 平铺 WM / X11 上的防休眠锁 | ScreenSaver 服务缺失时调用直接失败 | 返回 `UdaError`（连接失败）；该模块没有分级上报 |
 | XFCE 上的托盘 | SNI 通过 AppIndicator 兼容的 watcher 工作，但没有原生双击事件 | `DoubleClick` 上报 `SupportLevel::None` |
@@ -48,7 +48,7 @@ let level = manager.support_level(TrayFeature::DoubleClick);
 
 match level {
     SupportLevel::Full => { /* 绘制双击动作 */ }
-    SupportLevel::Partial => { warn!("该后端上双击为降级行为") }
+    SupportLevel::Partial(reason) => { warn!("该后端上双击为降级行为：{reason}") }
     SupportLevel::None => { /* 隐藏 */ }
 }
 ```
@@ -114,15 +114,17 @@ Wayland 平铺 WM 需要通知守护进程在跑（`mako`、`swaync`、`dunst` �
 
 Linux 侧注销依赖具体 DE 提供 D-Bus 方法；未识别的桌面环境下该动作能力位为假。
 
-## Restricted 而非 Full 的情形
+## 非 `Full` 的情形
+
+`SupportLevel` 只有三态：`Full`、`Partial(reason)`、`None`。`Partial` 必须携带原因字符串——调用方要把降级原因展示给用户时，无需再猜"为什么"。
 
 | 功能 × 环境 | 级别 | 原因 |
 |-------------|------|------|
-| 主题检测 × Wayland 平铺 | Restricted | 无标准查询途径 |
-| 强调色 × KDE/XFCE | Unsupported | 无系统级强调色 |
-| 通知按钮 × Windows 未打包 | Restricted | 需 MSIX 注册 COM 激活器 |
-| 托盘 × XFCE | Restricted | 依赖 StatusNotifierWatcher 是否在跑 |
-| 防休眠 × Wayland 平铺 | Restricted | 依赖 `systemd-inhibit` / `swayidle` |
+| 主题检测 × Wayland 平铺 | `Partial` | 无标准查询途径；所有探测手段均无结果 |
+| 强调色 × KDE/XFCE | `None` | 无系统级强调色 |
+| 通知按钮 × Windows 未打包 | `Partial` | 需 MSIX 注册 COM 激活器 |
+| 托盘 × XFCE | `None` | SNI 无双击事件，该特性未被上报 |
+| 防休眠 × Wayland 平铺 | `None` | ScreenSaver 服务缺失时调用直接失败，无 CLI 回退 |
 
 ## 版本要求
 

@@ -25,14 +25,11 @@ Shipping a cross-platform desktop app today means writing the same feature sever
 UDA replaces that fragmentation with one **capability-driven** Rust API: it probes the environment, selects an available backend, and degrades gracefully instead of failing.
 
 <CardGrid>
-  <Card title="Portal-first" icon="rocket">
-    Every Linux feature tries the XDG Desktop Portal before touching anything distro-specific.
-  </Card>
   <Card title="Cascading fallback" icon="random">
-    A strict tier chain: Portal → native DE IPC → CLI tools → a strongly typed `UdaError::Unsupported`.
+    A strict tier chain: XDG Desktop Portal → native DE IPC → CLI tools → a strongly typed `UdaError::NotSupported`. Wallpaper and wake locks start at Tier 2; appearance detection is the only module that engages the portal.
   </Card>
   <Card title="Capability-driven" icon="magnifier">
-    Features advertise `SupportLevel::Full` / `Restricted` / `Unsupported`, so your app can branch before it breaks.
+    Features advertise `SupportLevel::Full` / `Partial(reason)` / `None`, so your app can branch before it breaks — and explain a degradation instead of guessing at it.
   </Card>
   <Card title="Zero heavy dependencies" icon="puzzle">
     Pure Rust `zbus` on Linux, `windows-rs` on Windows. No Qt, no GTK, no bundled toolkit.
@@ -47,9 +44,9 @@ UDA replaces that fragmentation with one **capability-driven** Rust API: it prob
 | C-ABI (`include/uda.h`) | C/C++, or anywhere a stable ABI matters |
 | Python / Node.js SDKs | `examples/python/uda.py` (ctypes) and `examples/nodejs/uda.js` (koffi) — no native build step |
 
-## Version 0.2.0
+## Version 0.2.1
 
-The 0.2.0 release covers: light/dark appearance detection, wallpaper management with fill modes and multi-monitor targeting, native notifications with icons, urgency and actions, keep-awake locks, **system tray** with a cross-platform menu model, **media control** with metadata read and playback commands, and **session & power lifecycle** (lock, logout, suspend, hibernate, reboot, shutdown).
+The 0.2.1 release covers: light/dark appearance detection, wallpaper management with fill modes and multi-monitor targeting, native notifications with icons, urgency and actions, keep-awake locks, **system tray** with a cross-platform menu model, **media control** with metadata read and playback commands, and **session & power lifecycle** (lock, logout, suspend, hibernate, reboot, shutdown).
 
 Per-desktop coverage is listed in the [platform support matrix](/en/reference/platform-support/).
 

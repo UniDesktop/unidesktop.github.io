@@ -25,14 +25,11 @@ import { Card, CardGrid } from '@astrojs/starlight/components';
 UDA 以一套**能力驱动（capability-driven）**的 Rust API 统一这些差异：探测运行环境、选择可用后端、按能力降级，避免在不可用环境下直接失败。
 
 <CardGrid>
-  <Card title="Portal 优先" icon="rocket">
-    所有 Linux 功能都先尝试 XDG Desktop Portal，再回落到发行版特定方案。
-  </Card>
   <Card title="级联回退" icon="random">
-    严格的层级链：Portal → 原生桌面环境 IPC → CLI 工具 → 强类型 `UdaError::Unsupported`。
+    严格的层级链：XDG Desktop Portal → 原生桌面环境 IPC → CLI 工具 → 强类型 `UdaError::NotSupported`。壁纸与防休眠从第二级开始，目前只有外观检测使用 Portal。
   </Card>
   <Card title="能力驱动" icon="magnifier">
-    功能主动上报 `SupportLevel::Full` / `Restricted` / `Unsupported`，让你的应用在出错前就能分流。
+    功能主动上报 `SupportLevel::Full` / `Partial(reason)` / `None`，让你的应用在出错前就能分流，并能解释降级原因而不是靠猜。
   </Card>
   <Card title="零重型依赖" icon="puzzle">
     Linux 侧为纯 Rust `zbus`，Windows 侧为 `windows-rs`。不依赖 Qt、GTK 或任何打包工具箱。
@@ -49,7 +46,7 @@ UDA 以一套**能力驱动（capability-driven）**的 Rust API 统一这些差
 
 ## 当前版本能力
 
-v0.2.0 包含以下模块：深浅色外观检测、壁纸管理、原生通知、防休眠锁、**系统托盘**、**媒体播控**、**会话与电源生命周期**（锁屏、注销、睡眠、休眠、重启、关机）。
+v0.2.1 包含以下模块：深浅色外观检测、壁纸管理、原生通知、防休眠锁、**系统托盘**、**媒体播控**、**会话与电源生命周期**（锁屏、注销、睡眠、休眠、重启、关机）。
 
 各功能在不同桌面环境下的支持情况见[平台支持矩阵](/reference/platform-support/)。
 

@@ -67,6 +67,26 @@ with Uda(library_path="/opt/uda/libuda_ffi.so") as uda:   # 显式指定
 | `supports(action)` | `bool`，`action` 为动作名 |
 | `lock()` / `logout()` / `suspend()` / `hibernate()` / `reboot()` / `shutdown()` | 方法 |
 
+## 通知
+
+```python
+uda.notify("下载完成", "report.pdf 已保存到 ~/Downloads")
+uda.notify("更新可用", "v0.2.1 已发布",
+           icon="/home/me/Pictures/ok.png",
+           actions={"open": "查看详情", "later": "稍后提醒"},
+           app_name="我的应用")
+```
+
+| 参数 | 含义 |
+|------|------|
+| `title` | 单行标题 |
+| `body` | 多行正文，可为空 |
+| `icon` | 图标路径或 URI，可为空。请用绝对路径——相对路径按进程工作目录解析 |
+| `actions` | `{key: label}` 表，如 `{"open": "查看详情"}` |
+| `app_name` | 在 Windows 上即 toast 的 AppUserModelID；留空则使用通用身份 `UniDesktop.Notification` |
+
+Windows 上 toast 的动作*按钮*需要 MSIX 打包的激活器，因此 `actions` 会被接受但只呈现为文本——toast 本身仍正常弹出。
+
 ## `WakeLock`
 
 | 成员 | 说明 |
@@ -107,6 +127,36 @@ with Uda(library_path="/opt/uda/libuda_ffi.so") as uda:   # 显式指定
 
 回调运行在托盘工作线程上，必须尽快返回，且不能直接操作 UI——请转发到宿主自己的事件循环。
 
+```python
+def on_toggle(item_id, checked, user_data):
+    print(checked)
+
+with Uda() as uda:
+    icon = uda.create_tray_icon("My App", tooltip="我的应用正在运行")
+    menu = uda.create_tray_menu()
+    menu.add_text("设置", lambda item_id, user_data: print("打开设置"))
+    menu.add_checkbox("深色模式", checked=False, callback=on_toggle)
+    menu.add_separator()
+    menu.add_text("退出", lambda item_id, user_data: icon.stop())
+    icon.menu = menu
+    icon.wait()
+    icon.destroy()
+```
+
+## 媒体与会话
+
+```python
+track = uda.media.now_playing      # 无播放器运行时为 None
+if track:
+    print(f"{track.title} - {track.artist} ({track.duration_ms} ms)")
+uda.media.send("play" if uda.media.status != "playing" else "pause")
+
+if uda.session.supports("suspend"):
+    uda.session.suspend()          # 破坏性动作——先向用户确认
+```
+
+没有可播放内容时 `now_playing` 返回 `None` 而不抛异常。六个会话动作中有五个会结束用户会话或停机，只有 `lock()` 适合自动化执行。
+
 ## 异常模型
 
 ```python
@@ -115,4 +165,23 @@ class UdaError(RuntimeError):
     # 消息由 uda_last_error_message() 提供；读取失败时退回状态码描述
 ```
 
+```python
+from uda import UdaError
+
+try:
+    uda.set_wallpaper("/nonexistent.png", FillMode.FIT)
+except UdaError as exc:
+    print(exc.status, exc)      # (-2, 'Feature not supported: ...')
+```
+
+`UdaError` 继承 `RuntimeError`，并携带 `status`（负数状态码）。消息文本来自 `uda_last_error_message()`；读取失败时改用状态码描述。
+
+每个状态码的含义见[状态码](/reference/status-codes/)。
+
 `__del__` 兜底只在忘记释放时触发，正常路径请用 `with` 或显式 `destroy()` / `release()`。
+
+## 相关文档
+
+- [Node.js SDK](/reference/nodejs-sdk/)——同样基于 koffi 的绑定
+- [C-ABI 参考](/reference/c-abi/)——底层函数表
+- [状态码](/reference/status-codes/)——常量定义与触发场景

@@ -20,8 +20,8 @@ The last one matters more than it looks: `crates/uda-platform-windows/src/lib.rs
 
 ## The three principles
 
-1. **Capability-driven architecture (never panic).** No `.unwrap()` or `.expect()` on a system call, a D-Bus invocation or an environment variable. Every feature exposes a `SupportLevel` check — `Full`, `Restricted(reason)` or `Unsupported` — and degrades gracefully before returning an error.
-2. **The cascading fallback engine.** Tier 1 XDG portal → Tier 2 native DE IPC → Tier 3 CLI tools → Tier 4 a typed `UdaError::Unsupported`.
+1. **Capability-driven architecture (never panic).** No `.unwrap()` or `.expect()` on a system call, a D-Bus invocation or an environment variable. Every feature exposes a `SupportLevel` check — `Full`, `Partial(reason)` or `None` — and degrades gracefully before returning an error.
+2. **The cascading fallback engine.** Tier 1 XDG portal → Tier 2 native DE IPC → Tier 3 CLI tools → Tier 4 a typed `UdaError::NotSupported`.
 3. **Zero-bloat.** No Qt, no GTK, no bundled toolkit. Pure-Rust `zbus` on Linux, `windows-rs` on Windows.
 
 ## Conventions

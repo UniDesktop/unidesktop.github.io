@@ -79,7 +79,7 @@ with Uda(library_path="/opt/uda/libuda_ffi.so") as uda:
 
 ```python
 uda.notify("下载完成", "report.pdf 已保存到 ~/Downloads")
-uda.notify("更新可用", "v0.2.0 已发布",
+uda.notify("更新可用", "v0.2.1 已发布",
            icon="/home/me/Pictures/ok.png",
            actions={"open": "查看详情", "later": "稍后提醒"},
            app_name="我的应用")

@@ -9,10 +9,10 @@ description: 四级降级链的探测手段、判定条件与设计理由。
 Tier 1  XDG Desktop Portal
 Tier 2  原生 DE D-Bus / IPC
 Tier 3  CLI 工具（PATH 探测）
-Tier 4  UdaError::Unsupported（类型化错误）
+Tier 4  UdaError::NotSupported（类型化错误）
 ```
 
-三级都失败时**不** panic、不返回裸 `io::Error`，而是返回带诊断信息的 `UdaError::Unsupported`。
+三级都失败时**不** panic、不返回裸 `io::Error`，而是返回带诊断信息的 `UdaError::NotSupported`。
 
 ## Tier 1：XDG Desktop Portal
 
@@ -58,7 +58,7 @@ Tier 4  UdaError::Unsupported（类型化错误）
 ## Tier 4：类型化错误
 
 ```rust
-UdaError::Unsupported(format!(
+UdaError::NotSupported(format!(
     "no wallpaper backend: no Portal, no GNOME/KDE/IPC, and none of [feh, nitrogen] on PATH"
 ))
 ```

@@ -76,7 +76,7 @@ Reading the wallpaper goes through the same chain in reverse and reports what is
 | Symptom | Return |
 |---|---|
 | the file is unreadable | `UDA_ERR_IO` |
-| every fallback tier is unavailable | `UdaError::Unsupported`, whose message lists the tools already tried |
+| every fallback tier is unavailable | `UdaError::NotSupported`, whose message lists the tools already tried |
 | the platform cannot read the value | `uda.wallpaper` returns `None` |
 
 ## See also

@@ -74,7 +74,7 @@ Sway         swww
    ↓ 不可用
 通用 X11     feh → nitrogen（按 PATH 探测）
    ↓ 全部不可用
-UdaError::Unsupported("Neither feh nor nitrogen is available")
+UdaError::NotSupported("Neither feh nor nitrogen is available")
 ```
 
 各桌面的具体探测顺序与参数见[仓库内的 wallpaper_specs.md](https://github.com/UniDesktop/SDK/blob/develop/docs/internals/wallpaper_specs.md)。
@@ -92,7 +92,7 @@ Windows 侧只有一级：`SystemParametersInfoW(SPI_SETDESKWALLPAPER)`，并同
 | 现象 | 返回 |
 |------|------|
 | 文件不可读 | `UDA_ERR_IO` |
-| 所有降级层级均不可用 | `UdaError::Unsupported`，消息列出已尝试的工具 |
+| 所有降级层级均不可用 | `UdaError::NotSupported`，消息列出已尝试的工具 |
 | 平台不支持读取 | `uda.wallpaper` 返回 `None` |
 
 ## 相关文档

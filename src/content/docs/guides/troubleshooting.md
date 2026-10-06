@@ -28,7 +28,7 @@ description: 按模块列出的症状、原因与处置，覆盖 Linux 与 Windo
 XDG_CURRENT_DESKTOP=GNOME XDG_SESSION_TYPE=wayland WAYLAND_DISPLAY=wayland-0 cargo run --example 01_appearance
 ```
 
-### SSH 下全部为 `Unsupported`
+### SSH 下全部为 `NotSupported`
 
 没有会话总线意味着没有 Portal、没有桌面 IPC、也没有通知。唤醒锁与壁纸同样无法工作。这是降级机制按设计工作的结果，不是缺陷。
 
@@ -54,7 +54,7 @@ SDK 的解析顺序：显式 `library_path` → `UDA_LIBRARY` 环境变量 → `
 
 ### `Feature not supported: Neither feh nor nitrogen`
 
-**症状**：`UdaError::Unsupported`，消息列出全部 CLI 工具名。
+**症状**：`UdaError::NotSupported`，消息列出全部 CLI 工具名。
 
 **原因**：Tier 1（Portal）、Tier 2（GNOME/KDE/Hyprland/Sway IPC）都不可用，Tier 3 探测 `PATH` 也没找到任何工具。
 

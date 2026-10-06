@@ -16,10 +16,16 @@ UDA 的约定是：**每个功能主动上报其能力等级**，应用据此在
 | 变体 | 含义 | 应用应当 |
 |------|------|----------|
 | `SupportLevel::Full` | 完整支持 | 正常使用 |
-| `SupportLevel::Partial` | 以受限形式提供（如仅支持部分显示器、模式或格式） | 可用，但不要向用户承诺缺失的部分 |
+| `SupportLevel::Partial(reason)` | 以受限形式提供（如仅支持部分显示器、模式或格式），并**携带降级原因** | 可用，但不要向用户承诺缺失的部分；`reason` 可直接展示给用户 |
 | `SupportLevel::None` | 不可用 | 隐藏入口，或给出说明 |
 
-`Partial` 不携带原因字符串。需要说明「为什么」时，后端在调用时返回类型化的 `UdaError`——诊断信息随错误返回，而不是附加在能力等级上。
+`reason` 通过 `SupportLevel::reason()` 读取，返回 `Option<&str>`：
+
+```rust
+if let Some(reason) = level.reason() {
+    warn!("该能力已降级：{reason}");
+}
+```
 
 ## Capability 位标志
 
@@ -50,7 +56,7 @@ Tier 2  原生 DE IPC             查 $XDG_CURRENT_DESKTOP，调 GNOME/KDE 的
 Tier 3  CLI 工具                探测 PATH 上的 swww / hyprpaper / feh /
                                 nitrogen / xfconf-query
    ↓ 否
-Tier 4  类型化错误              UdaError::Unsupported("...")
+Tier 4  类型化错误              UdaError::NotSupported("...")
 ```
 
 以壁纸为例的实际链路（该模块不使用 Portal）：
@@ -92,7 +98,7 @@ let level = manager.support_level(TrayFeature::Tooltip);
 
 match level {
     SupportLevel::Full => { /* 绘制 tooltip 字段 */ }
-    SupportLevel::Partial => { warn!("该后端上 tooltip 为降级行为") }
+    SupportLevel::Partial(reason) => { warn!("该后端上 tooltip 为降级行为：{reason}") }
     SupportLevel::None => { /* 隐藏 */ }
 }
 ```
@@ -108,7 +114,7 @@ match level {
 | Windows 未打包环境带 `actions` | 通知正常显示，按钮不渲染 |
 | Windows 无图标 | 用文本模板，卡片不显示图片 |
 | Linux 无强调色（KDE/Wayland） | `accent_color` 返回 `None` |
-| 会话无 hibernation | 能力位为假，运行时返回 `NotSupported` |
+| Linux 上无系统级主题（Wayland 平铺 WM） | 返回 `Theme::Unknown`，而不是猜测 `Light` |
 | 通知守护进程缺失 | `Notify` 调用本身报错，能力位仍上报存在 |
 
 :::note[降级必须可观测]

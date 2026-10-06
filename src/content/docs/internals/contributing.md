@@ -12,7 +12,7 @@ Linux 桌面高度碎片化，Wayland 还严格限制部分能力。任何"假�
 **规则**：
 
 - 系统调用、D-Bus 调用、环境变量读取上**禁止** `unwrap()` / `expect()`；
-- 每个高层功能必须上报能力（`SupportLevel::Full` / `Restricted(reason)` / `Unsupported`）；
+- 每个高层功能必须上报能力（`SupportLevel::Full` / `Partial(reason)` / `None`）；
 - 新功能失败时先尝试已知替代方案，最后才返回错误。
 
 ### 2. 级联降级
@@ -20,7 +20,7 @@ Linux 桌面高度碎片化，Wayland 还严格限制部分能力。任何"假�
 Linux 上执行任何 OS 桌面动作：
 
 ```text
-Portal → 原生 DE IPC → CLI 工具 → UdaError::Unsupported
+Portal → 原生 DE IPC → CLI 工具 → UdaError::NotSupported
 ```
 
 Windows 只有一级（Win32/WinRT 总可用），但最终的类型化错误仍然适用。
@@ -38,12 +38,16 @@ Windows 只有一级（Win32/WinRT 总可用），但最终的类型化错误仍
 ```rust
 #[derive(thiserror::Error, Debug)]
 pub enum UdaError {
-    #[error("Feature unsupported on this desktop: {0}")]
-    Unsupported(String),
-    #[error("D-Bus communication error: {0}")]
-    DBusError(#[from] zbus::Error),
-    #[error("Platform IO error: {0}")]
-    IoError(#[from] std::io::Error),
+    #[error("Feature not supported: {0}")]
+    NotSupported(String),
+    #[error("Detection failed: {0}")]
+    DetectionFailed(String),
+    #[error("Command failed: {0}")]
+    CommandFailed(String),
+    #[error("IO error: {0}")]
+    Io(#[from] std::io::Error),
+    #[error("Internal error: {0}")]
+    Internal(String),
 }
 ```
 

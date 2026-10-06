@@ -16,10 +16,16 @@ UDA's contract: **every feature reports its support level**, so the application 
 | Variant | Meaning | What your app should do |
 |---|---|---|
 | `SupportLevel::Full` | fully supported | use it normally |
-| `SupportLevel::Partial` | available in a degraded form (a limited set of monitors, modes or formats) | use it, but do not promise the missing part to the user |
+| `SupportLevel::Partial(reason)` | available in a degraded form (a limited set of monitors, modes or formats), **with the reason attached** | use it, but do not promise the missing part to the user; `reason` can be shown to the user verbatim |
 | `SupportLevel::None` | not available | hide the entry, or explain why |
 
-`Partial` carries no reason string. When a backend needs to say *why*, it returns a typed `UdaError` at call time instead — the diagnostic text travels with the error, not with the capability level.
+The reason is read through `SupportLevel::reason()`, which returns `Option<&str>`:
+
+```rust
+if let Some(reason) = level.reason() {
+    warn!("this capability is degraded: {reason}");
+}
+```
 
 ## Capability bit flags
 
@@ -50,10 +56,10 @@ Tier 2  Native DE IPC            read $XDG_CURRENT_DESKTOP, call GNOME/KDE
 Tier 3  CLI tools                probe PATH for swww / hyprpaper / feh /
                                  nitrogen / xfconf-query
    ↓ no
-Tier 4  Typed error              UdaError::Unsupported("...")
+Tier 4  Typed error              UdaError::NotSupported("...")
 ```
 
-When all three service tiers fail there is **no panic** and no bare `io::Error` — the caller gets a `UdaError::Unsupported` carrying a diagnosis.
+When all three service tiers fail there is **no panic** and no bare `io::Error` — the caller gets a `UdaError::NotSupported` carrying a diagnosis.
 
 The actual chain for wallpaper, which does not use the portal:
 
@@ -82,7 +88,7 @@ let level = manager.support_level(TrayFeature::Tooltip);
 
 match level {
     SupportLevel::Full => { /* draw the tooltip field */ }
-    SupportLevel::Partial => { warn!("tooltip is degraded on this backend") }
+    SupportLevel::Partial(reason) => { warn!("tooltip is degraded on this backend: {reason}") }
     SupportLevel::None => { /* hide it */ }
 }
 ```
@@ -94,6 +100,8 @@ For features that are not tray-related, the same information is exposed per modu
 ## Rule: `Partial` is reserved
 
 A backend publishes `Partial` only when it can genuinely deliver a degraded behaviour — Linux double-click synthesis, or a tooltip longer than the soft cap. An absent flag is a plain `None`, never a guess. This keeps "advertised" equivalent to "deliverable".
+
+Because `Partial` carries its reason, the degradation must be describable in one sentence. A backend that cannot say why the feature is degraded does not publish `Partial` — it either delivers the feature or reports `None`.
 
 ## See also
 
